@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Sends email alert based on CloudTrail Insights."
+Parameters:
+  Email:
+    Type: "String"
+    Description: "Email address to notify when an API activity has triggered an alarm"
+
+Resources:
+  AlarmNotificationTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      Subscription:
+        - Endpoint: !Ref "Email"
+          Protocol: "email"
+  CloudWatchEventRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: !Ref AWS::StackName
+      Description: "Receive insights from CloudTrail and pass them to SNS topic."
+      EventPattern:
+        source:
+          - "aws.cloudtrail"
+        detail-type:
+          - "AWS Insight via CloudTrail"
+      Targets:
+        - Arn: !Ref AlarmNotificationTopic
+          Id: Id1
